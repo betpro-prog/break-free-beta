@@ -1,5 +1,5 @@
-const CACHE_NAME = 'break-free-beta-v03';
-const ASSETS = ['./','./index.html','./privacy.html','./testing.html','./sw.js'];
+const CACHE_NAME = 'break-free-beta-v04';
+const ASSETS = ['./','./index.html','./icon.svg','./manifest.webmanifest','./privacy.html','./testing.html','./install.html','./sw.js'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
@@ -9,6 +9,17 @@ self.addEventListener('activate',event=>{
   )).then(()=>self.clients.claim()));
 });
 self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
-  event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request)));
+  const req=event.request;
+  if(req.method!=='GET'||new URL(req.url).origin!==self.location.origin)return;
+  if(req.mode==='navigate') {
+    event.respondWith(fetch(req).then(response=>{
+      if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(req,copy)).catch(()=>{});}
+      return response;
+    }).catch(()=>caches.match(req).then(cached=>cached||caches.match('./index.html'))));
+  } else {
+    event.respondWith(caches.match(req).then(cached=>cached||fetch(req).then(response=>{
+      if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(req,copy)).catch(()=>{});}
+      return response;
+    })));
+  }
 });
