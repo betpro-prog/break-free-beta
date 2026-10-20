@@ -38,7 +38,7 @@ input[type=number]{color-scheme:dark}
     </header>
     <main id="app" tabindex="-1" aria-live="polite"></main>
     <nav id="nav" class="bottom-nav" aria-label="Main navigation"></nav>
-    <footer class="footer">BREAK FREE · <span id="foot-version">v0.4 BETA</span> · <span id="foot-note">Podaci ostaju na ovom uređaju</span> · <a href="privacy.html">Privatnost / Privacy</a> · <a href="testing.html">Beta info</a> · <a href="install.html">Dodaj na početni zaslon</a></footer>
+    <footer class="footer">BREAK FREE · <span id="foot-version">v0.5 BETA</span> · <span id="foot-note">Podaci ostaju na ovom uređaju</span> · <a href="privacy.html">Privatnost / Privacy</a> · <a href="testing.html">Beta info</a> · <a href="install.html">Dodaj na početni zaslon</a></footer>
   </div>
   <div id="dialog-root"></div>
   <script>
@@ -997,10 +997,10 @@ window.BF_LOCALES = {
     "backHome": "Powrót do początku",
     "rateTag": "Korzystanie z aplikacji nie dowodzi rzucenia palenia.",
     "footNote": "Dane pozostają na tym urządzeniu",
-    "goalsTitle": "Punkt odniesienia i cena",
-    "goalsLead": "Podaj wcześniejszą średnią dzienną i cenę paczki, aby oszacować oszczędności. Opcjonalnie.",
+    "goalsTitle": "Punkt odniesienia i cena",    "goalsLead": "Podaj wcześniejszą średnią dzienną i cenę paczki, aby oszacować oszczędności. Opcjonalnie.",
     "baselineLabel": "Wcześniej papierosów dziennie",
-    "packPriceLabel": "Cena paczki (€)",    "saveGoals": "Zapisz ustawienia",
+    "packPriceLabel": "Cena paczki (€)",
+    "saveGoals": "Zapisz ustawienia",
     "savingsTitle": "Szacowane oszczędności",
     "savingsNote": "Szacunek wyłącznie dla zapisanych dni na tle własnej średniej; niepotwierdzona oszczędność.",
     "savingsEmpty": "Ustaw punkt odniesienia, cenę i zapisuj zużycie.",
@@ -1036,6 +1036,7 @@ window.BF_LOCALES = {
 /* BREAK FREE v0.3 public beta — self-contained PWA, no backend, ads, payments or telemetry. */
 (() => {
   'use strict';
+  const BACKUP_TEXT = {"hr":{"importData":"Uvezi sigurnosnu kopiju","importConfirm":"Uvoz će zamijeniti trenutačni dnevnik i ciljeve na ovom uređaju. Nastaviti?","importSuccess":"Sigurnosna kopija uspješno vraćena.","importFailed":"Datoteka nije valjana ili je prevelika. Odaberi BREAK FREE JSON kopiju."},"en":{"importData":"Restore backup","importConfirm":"Import will replace the current log and goals on this device. Continue?","importSuccess":"Backup restored successfully.","importFailed":"Invalid or oversized file. Select a BREAK FREE JSON backup."},"de":{"importData":"Sicherung wiederherstellen","importConfirm":"Der Import ersetzt das aktuelle Tagebuch und die Ziele auf diesem Gerät. Fortfahren?","importSuccess":"Sicherung wiederhergestellt.","importFailed":"Ungültige oder zu große Datei. Wähle eine BREAK FREE JSON-Sicherung."},"es":{"importData":"Restaurar copia de seguridad","importConfirm":"La importación reemplazará el registro y los objetivos actuales. ¿Continuar?","importSuccess":"Copia restaurada correctamente.","importFailed":"Archivo no válido o demasiado grande. Elige una copia JSON de BREAK FREE."},"it":{"importData":"Ripristina backup","importConfirm":"L’importazione sostituirà il diario e gli obiettivi attuali. Continuare?","importSuccess":"Backup ripristinato.","importFailed":"File non valido o troppo grande. Scegli un backup JSON di BREAK FREE."},"fr":{"importData":"Restaurer une sauvegarde","importConfirm":"L’import remplacera le journal et les objectifs de cet appareil. Continuer ?","importSuccess":"Sauvegarde restaurée.","importFailed":"Fichier incorrect ou trop volumineux. Choisissez une sauvegarde JSON BREAK FREE."},"pt":{"importData":"Restaurar cópia de segurança","importConfirm":"A importação vai substituir o registo e os objetivos atuais. Continuar?","importSuccess":"Cópia restaurada com sucesso.","importFailed":"Ficheiro inválido ou demasiado grande. Selecione uma cópia JSON BREAK FREE."},"pl":{"importData":"Przywróć kopię zapasową","importConfirm":"Import zastąpi bieżący dziennik i cele na tym urządzeniu. Kontynuować?","importSuccess":"Kopia zapasowa została przywrócona.","importFailed":"Nieprawidłowy lub zbyt duży plik. Wybierz kopię JSON BREAK FREE."}};
   const KEY = 'breakfree_v02';
   const LEGACY_KEY = 'breakfree_v01';
   const LANGS = [['hr','Hrvatski'],['en','English'],['de','Deutsch'],['es','Español'],['it','Italiano'],['fr','Français'],['pt','Português'],['pl','Polski']];
@@ -1080,7 +1081,7 @@ window.BF_LOCALES = {
     persist();
   }
   function persist(){ try{localStorage.setItem(KEY, JSON.stringify(data));} catch (_err){ /* still usable in-memory */ } }
-  function t(key){return window.BF_LOCALES?.[data.language]?.[key] ?? window.BF_LOCALES?.en?.[key] ?? key;}
+  function t(key){return BACKUP_TEXT[data.language]?.[key] ?? window.BF_LOCALES?.[data.language]?.[key] ?? BACKUP_TEXT.en?.[key] ?? window.BF_LOCALES?.en?.[key] ?? key;}
   function day(key=today()){const v=data.days[key];return v && isNum(v.cigs) ? v.cigs : null;}
   function stats(){const entries=data.checkins.filter(x=>x.day===today());return {
     breaks:entries.filter(x=>x.kind==='breath').length,rituals:entries.filter(x=>x.kind==='smoke').length,
@@ -1134,7 +1135,7 @@ window.BF_LOCALES = {
       <form id="goals-form" class="input-row"><div class="input-wrap"><label for="baseline">${t('baselineLabel')}</label><input id="baseline" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="${t('goalPlaceholder')}" value="${data.baseline??''}"></div>
       <div class="input-wrap"><label for="pack-price">${t('packPriceLabel')}</label><input id="pack-price" type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="${t('goalPlaceholder')}" value="${data.packPrice??''}"></div><div class="full"><button type="submit" class="btn small">${t('saveGoals')}</button></div></form></section>
       <section class="card"><h2 class="feature-title">🔒 ${t('privacyTitle')}</h2><p class="muted">${t('privacyCopy')}</p>
-      <button class="btn small soft" data-action="export">↓ ${t('exportData')}</button><p class="fineprint">${t('exportNotice')}</p><div class="separator"></div>
+      <button class="btn small soft" data-action="export">↓ ${t('exportData')}</button> <label for="backup-file" class="btn small secondary" style="display:inline-block">↑ ${t('importData')}</label><input type="file" id="backup-file" class="sr-only" accept="application/json,.json" aria-label="${t('importData')}" /><p class="fineprint">${t('exportNotice')}</p><div class="separator"></div>
       <button class="btn small danger" data-action="reset-ask">${t('resetData')}</button></section></div>
       <div class="split" style="margin-top:18px"><section class="card"><h2 class="feature-title">🌱 ${t('tipsTitle')}</h2><p class="muted">${t('tipsCopy')}</p><p class="fineprint">${t('medicalNotice')}</p></section>
       <section class="card"><h2 class="feature-title">✦ ${t('vipTitle')}</h2><p class="muted">${t('vipCopy')}</p><span class="badge">${t('noMoney')}</span></section></div>`;}
@@ -1181,6 +1182,28 @@ window.BF_LOCALES = {
     if(!validBaseline||!validPrice){toast(t('invalidGoal'));return;}data.baseline=baseline===''?null:Number(baseline);data.packPrice=price===''?null:Number(price);persist();render();toast(t('goalSaved'));}
   function exportData(){const contents=JSON.stringify({app:'Break Free',...data,exportedAt:new Date().toISOString()},null,2);
     const blob=new Blob([contents],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`break-free-backup-${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+  async function importData(file){
+    if(!file)return;
+    if(file.size>1024*1024){toast(t('importFailed'));return;}
+    let parsed;
+    try {parsed=JSON.parse(await file.text());}catch(_err){toast(t('importFailed'));return;}
+    if(parsed?.app!=='Break Free'||parsed.version!==2||!parsed.days||typeof parsed.days!=='object'||Array.isArray(parsed.days)||!Array.isArray(parsed.checkins)){
+      toast(t('importFailed'));return;
+    }
+    const days={};
+    for(const [key,value] of Object.entries(parsed.days).slice(-1000)){
+      if(/^\d{4}-\d{2}-\d{2}$/.test(key)&&isNum(value?.cigs)&&value.cigs>=0&&value.cigs<=150){days[key]={cigs:Math.round(value.cigs)};}
+    }
+    const checkins=parsed.checkins.slice(-500).filter(e=>e && /^\d{4}-\d{2}-\d{2}$/.test(e.day)&&['smoke','breath'].includes(e.kind)&&['weaker','same','stronger','skipped'].includes(e.feeling))
+      .map(e=>({day:e.day,kind:e.kind,feeling:e.feeling}));
+    const baseline=isNum(parsed.baseline)&&parsed.baseline>=0&&parsed.baseline<=100?parsed.baseline:null;
+    const packPrice=isNum(parsed.packPrice)&&parsed.packPrice>=0&&parsed.packPrice<=100?parsed.packPrice:null;
+    if(!window.confirm(t('importConfirm')))return;
+    stopBreathing();
+    data={...DEFAULT(),adult:true,minor:false,language:LANGS.some(l=>l[0]===parsed.language)?parsed.language:data.language,
+      showSmoke:!!parsed.showSmoke,days,checkins,baseline,packPrice,view:'home'};
+    persist();render();toast(t('importSuccess'));
+  }
   function handle(action,el){switch(action){
     case 'go':navigate(el.dataset.page);break;
     case 'smoke-tap':smokeTap();break;
@@ -1203,7 +1226,8 @@ window.BF_LOCALES = {
     handle(el.dataset.action,el);});
   document.addEventListener('keydown',ev=>{const el=ev.target.closest('.is-link[data-action]');if(el&&(ev.key==='Enter'||ev.key===' ')){ev.preventDefault();handle(el.dataset.action,el);}});
   document.addEventListener('change',ev=>{if(ev.target===langSelect){data.language=ev.target.value;persist();render();}
-    if(ev.target.id==='smoke-toggle'){data.showSmoke=ev.target.checked;persist();render();}});
+    if(ev.target.id==='smoke-toggle'){data.showSmoke=ev.target.checked;persist();render();}
+    if(ev.target.id==='backup-file'){const file=ev.target.files?.[0];importData(file);}});
   document.addEventListener('submit',ev=>{if(ev.target.id==='goals-form'){ev.preventDefault();saveGoal();}});
   window.addEventListener('storage',event=>{if(event.key===KEY){try{const incoming=JSON.parse(event.newValue);if(incoming?.version===2){data={...DEFAULT(),...incoming};render();}}catch(_err){}}});
   load();render();if(!data.adult)showDialog(data.minor?'minor':'adult');
