@@ -1114,6 +1114,29 @@ window.BF_LOCALES = {
     <div class="split"><div class="stage"><div class="rings"></div><span class="breath" aria-hidden="true">🌱</span><div class="stage-caption" id="breath-phase">${phase}</div></div>
     <div class="card"><p class="eyebrow">${t('breathName')}</p><div id="breath-count" class="timer">${breathLeft}s</div><div class="progress-track" style="margin:15px 0 22px"><div id="breath-fill" class="progress-fill" style="width:${(60-breathLeft)/60*100}%"></div></div>
     <button class="btn full" data-action="breathe-toggle">${breathStarted!==null?t('breatheStop'):t('breatheStart')}</button><p class="notice">${t('disclaimerShort')}</p></div></div>`;}
+  function thirtyDayReport(){
+    const label={
+      hr:['30 dana · pregled (besplatno tijekom bete)','Evidentiranih dana','Prosjek po evidentiranom danu','Procijenjena ušteda','Nedostajući dani nisu nula. Iznos ovisi o upisanoj početnoj potrošnji i cijeni kutije.'],
+      en:['30-day overview (free during beta)','Logged days','Average per logged day','Estimated savings','Missing days are not zero. Savings depend on entered baseline and pack price.'],
+      de:['30-Tage-Übersicht (Beta kostenlos)','Erfasste Tage','Durchschnitt pro erfasstem Tag','Geschätzte Ersparnis','Fehlende Tage sind nicht null.'],
+      es:['Resumen de 30 días (beta gratis)','Días registrados','Media por día registrado','Ahorro estimado','Los días sin registrar no cuentan como cero.'],
+      it:['Riepilogo 30 giorni (beta gratuita)','Giorni registrati','Media per giorno registrato','Risparmio stimato','I giorni non registrati non equivalgono a zero.'],
+      fr:['Bilan sur 30 jours (bêta gratuite)','Jours enregistrés','Moyenne par jour suivi','Économies estimées','Les jours sans données ne comptent pas comme zéro.'],
+      pt:['Resumo de 30 dias (beta grátis)','Dias registados','Média por dia registado','Poupança estimada','Dias sem registo não contam como zero.'],
+      pl:['Przegląd 30 dni (bezpłatna beta)','Dni z wpisami','Średnia na wpisany dzień','Szacowane oszczędności','Brak wpisu nie oznacza zera.']
+    }[data.language]||['30-day overview','Logged days','Average per logged day','Estimated savings','Missing days are not zero.'];
+    const values=Array.from({length:30},(_,i)=>day(offset(i-29)));
+    const observed=values.filter(v=>v!==null);
+    const avg=observed.length?observed.reduce((a,b)=>a+b,0)/observed.length:null;
+    const savings=isNum(data.baseline)&&data.baseline>0&&isNum(data.packPrice)&&data.packPrice>0 ?
+       observed.reduce((a,v)=>a+Math.max(0,data.baseline-v)*data.packPrice/20,0):null;
+    const money=savings===null?'—':new Intl.NumberFormat(data.language,{style:'currency',currency:'EUR'}).format(savings);
+    return `<section class="card" style="margin-top:18px"><h2 class="feature-title">📊 ${sanitize(label[0])}</h2>
+      <div class="cards two"><div class="card"><p class="kicker">${sanitize(label[1])}</p><div class="number">${observed.length} / 30</div></div>
+      <div class="card"><p class="kicker">${sanitize(label[2])}</p><div class="number">${avg===null?'—':new Intl.NumberFormat(data.language,{maximumFractionDigits:1}).format(avg)}</div></div></div>
+      <p class="kicker">${sanitize(label[3])}: <strong>${money}</strong></p>
+      <p class="fineprint">${sanitize(label[4])}</p></section>`;
+  }
   function renderProgress(){
     const n=day(),keys=Array.from({length:7},(_,i)=>offset(i-6)),values=keys.map(k=>day(k));
     const max=Math.max(5,...values.filter(v=>v!==null));
@@ -1128,7 +1151,7 @@ window.BF_LOCALES = {
       <div class="btn-row" style="margin-top:15px"><button class="btn small soft" data-action="log-zero">${t('logZero')}</button><button class="btn small secondary" data-action="log-clear" ${n===null?'disabled':''}>${t('undoZero')}</button></div><p class="fineprint">${t('readyToLog')}</p></section>
       <section class="card"><h2 class="feature-title">${t('savingsTitle')}</h2>${savingsText}<p class="kicker">${t('loggedDays')}: <strong>${loggedDays} / 7</strong></p></section></div>
       <div class="split" style="margin-top:18px"><section class="card"><h2 class="feature-title">${t('weekTitle')}</h2><div class="chart" role="img" aria-label="${t('weekTitle')}">${bars}</div><p class="fineprint">${t('chartEmpty')}</p></section>
-      <section class="card"><h2 class="feature-title">${t('checkinTitle')}</h2>${history||`<p class="muted">${t('noCheckins')}</p>`}<p class="fineprint">${t('rateTag')}</p></section></div>`;
+      <section class="card"><h2 class="feature-title">${t('checkinTitle')}</h2>${history||`<p class="muted">${t('noCheckins')}</p>`}<p class="fineprint">${t('rateTag')}</p></section></div>${thirtyDayReport()}`;
   }
   function renderSettings(){return `<p class="eyebrow">${t('settingsEyebrow')}</p><h1 class="h2">${t('settingsTitle')}</h1><p class="lead">${t('settingsLead')}</p>
     <div class="split"><section class="card"><h2 class="feature-title">🎯 ${t('goalsTitle')}</h2><p class="muted">${t('goalsLead')}</p>
