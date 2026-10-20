@@ -1,0 +1,27 @@
+plugins {
+    id 'com.android.application'
+}
+android {
+    namespace 'com.breakfree.smokeless.beta'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.breakfree.smokeless.beta'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '0.6-beta'
+        buildConfigField 'boolean', 'BILLING_ENABLED', 'false'
+    }
+    buildFeatures { buildConfig true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    // Play Store release needs a PRIVATE signing key created by the owner.
+    // The GitHub CI emits a DEBUG APK and an UNSIGNED release AAB for development.
+}
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'com.android.billingclient:billing:9.1.0'
+}
