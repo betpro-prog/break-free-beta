@@ -1,5 +1,5 @@
-const CACHE_NAME = 'break-free-beta-v04';
-const ASSETS = ['./','./index.html','./icon.svg','./manifest.webmanifest','./privacy.html','./testing.html','./install.html','./sw.js'];
+const CACHE_NAME = 'break-free-beta-v07';
+const ASSETS = ['./','./index.html','./analytics.js','./icon.svg','./manifest.webmanifest','./privacy.html','./testing.html','./install.html','./sw.js'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
