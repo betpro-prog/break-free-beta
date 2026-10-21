@@ -1,0 +1,36 @@
+name: Test BREAK FREE analytics
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'analytics.js'
+      - 'tests/**'
+      - 'index.html'
+      - 'android/app/src/main/assets/**'
+      - '.github/workflows/test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run analytics unit tests
+        run: node --test tests/*.test.cjs
+      - name: Check identical analytics modules
+        run: cmp analytics.js android/app/src/main/assets/analytics.js
+      - name: Check HTML wiring
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          for(const file of ['index.html','android/app/src/main/assets/index.html']){
+            const s=fs.readFileSync(file,'utf8');
+            for(const match of ['<script src="./analytics.js"></script>','function advancedReport()','${advancedReport()}']){
+              if(!s.includes(match)) throw new Error(file+': '+match+' missing');
+            }
+          }
+          NODE
