@@ -46,6 +46,7 @@ html[data-bf-theme="mono"]{--bg:#11171a;--bg2:#1b2226;--surface:#262d30;--surfac
   </div>
   <div id="dialog-root"></div>
   <script src="./analytics.js"></script>
+  <script src="./urges.js"></script>
   <script>
 /* Break Free v0.2: local interface strings, no network requests. */
 window.BF_LOCALES = {
@@ -1045,7 +1046,7 @@ window.BF_LOCALES = {
   const KEY = 'breakfree_v02';
   const LEGACY_KEY = 'breakfree_v01';
   const LANGS = [['hr','Hrvatski'],['en','English'],['de','Deutsch'],['es','Español'],['it','Italiano'],['fr','Français'],['pt','Português'],['pl','Polski']];
-  const DEFAULT = () => ({version:2,language:null,adult:false,minor:false,view:'home',showSmoke:false,smokePuffs:0,days:{},checkins:[],baseline:null,packPrice:null,theme:'forest'});
+  const DEFAULT = () => ({version:2,language:null,adult:false,minor:false,view:'home',showSmoke:false,smokePuffs:0,days:{},checkins:[],baseline:null,packPrice:null,theme:'forest',urges:[]});
   const isNum = x => typeof x === 'number' && Number.isFinite(x);
   const sanitize = str => String(str ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const isoLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1077,6 +1078,7 @@ window.BF_LOCALES = {
     }
     if(!data.days||typeof data.days!=='object'||Array.isArray(data.days)) data.days={};
     if(!Array.isArray(data.checkins)) data.checkins=[];
+    data.urges=window.BF_Urges?window.BF_Urges.sanitize(data.urges,365):[];
     if(!LANGS.some(x=>x[0]===data.language)){
       const preferred=(navigator.language||'en').slice(0,2).toLowerCase();
       data.language=LANGS.some(x=>x[0]===preferred)?preferred:'en';
@@ -1098,7 +1100,7 @@ window.BF_LOCALES = {
     <section class="hero"><p class="eyebrow">${t('homeEyebrow')}</p><h1 class="h1">${t('homeTitle')}</h1><p class="lead">${t('homeLead')}</p><div class="btn-row">
     <button class="btn" data-action="go" data-page="breathe">✳ &nbsp;${t('startPause')}</button>
     <button class="btn secondary" data-action="go" data-page="smoke">${t('trySmoke')} ↗</button></div>
-    <p class="fineprint" style="margin:19px 0 0;color:#b8d5c6">${t('noMoney')}</p></section>
+    <button type="button" class="btn small soft" data-action="go" data-page="progress">${sanitize(window.BF_Urges?.languageLabels(data.language)[19]||"Log an urge")} ↗</button><p class="fineprint" style="margin:19px 0 0;color:#b8d5c6">${t('noMoney')}</p></section>
     <div class="section-title"><h2>${t('yourToday')}</h2><span class="badge">${today()}</span></div>
     <div class="cards">${statCard('breaksDone',s.breaks)}${statCard('ritualsDone',s.rituals)}${statCard('points',s.points)}</div>
     <div class="section-title"><h2>${t('explore')}</h2></div>
@@ -1155,6 +1157,14 @@ window.BF_LOCALES = {
     const card=(length,r)=>'<div class="card"><p class="kicker">'+length+' '+(hr?'dana':'days')+'</p><div class="number">'+avg(r.averageCigarettes)+'</div><p class="fineprint">'+r.loggedDays+'/'+length+' '+(hr?'evidentirano':'logged')+' · '+money(r.estimatedSavings)+'</p></div>';
     return '<section class="card" style="margin-top:18px"><h2 class="feature-title">📊 '+(hr?'Detaljna statistika — besplatna beta':'Detailed statistics — free beta')+'</h2><p class="fineprint">'+(hr?'Nezabilježeni dani nisu dani s nulom.':'Unlogged days are not zero-cigarette days.')+'</p><div class="cards two">'+card(30,thirty)+card(90,ninety)+'</div><h3 class="feature-title">'+(hr?'Tjedni prosjek, zadnja 4 tjedna':'Weekly average, last 4 weeks')+'</h3><div class="cards two">'+weekCards+'</div><p class="fineprint">'+(hr?'Ušteda je procjena.':'Savings are estimates.')+'</p><button type="button" class="btn secondary" data-action="export-csv">'+(hr?'Izvezi CSV (90 dana)':'Export CSV (90 days)')+'</button></section>';
   }
+  function saveUrge(form){
+    if(!window.BF_Urges)return;
+    const trigger=form.querySelector('#urge-trigger')?.value;
+    const intensity=Number(form.querySelector('#urge-intensity')?.value);
+    if(!window.BF_Urges.TRIGGERS.includes(trigger)||!Number.isInteger(intensity)||intensity<1||intensity>5)return;
+    data.urges=window.BF_Urges.sanitize([...(Array.isArray(data.urges)?data.urges:[]),{day:today(),trigger,intensity}],365);
+    persist();render();toast(window.BF_Urges.languageLabels(data.language)[16]);
+  }
   function renderProgress(){
     const n=day(),keys=Array.from({length:7},(_,i)=>offset(i-6)),values=keys.map(k=>day(k));
     const max=Math.max(5,...values.filter(v=>v!==null));
@@ -1169,7 +1179,7 @@ window.BF_LOCALES = {
       <div class="btn-row" style="margin-top:15px"><button class="btn small soft" data-action="log-zero">${t('logZero')}</button><button class="btn small secondary" data-action="log-clear" ${n===null?'disabled':''}>${t('undoZero')}</button></div><p class="fineprint">${t('readyToLog')}</p></section>
       <section class="card"><h2 class="feature-title">${t('savingsTitle')}</h2>${savingsText}<p class="kicker">${t('loggedDays')}: <strong>${loggedDays} / 7</strong></p></section></div>
       <div class="split" style="margin-top:18px"><section class="card"><h2 class="feature-title">${t('weekTitle')}</h2><div class="chart" role="img" aria-label="${t('weekTitle')}">${bars}</div><p class="fineprint">${t('chartEmpty')}</p></section>
-      <section class="card"><h2 class="feature-title">${t('checkinTitle')}</h2>${history||`<p class="muted">${t('noCheckins')}</p>`}<p class="fineprint">${t('rateTag')}</p></section></div>${advancedReport()}${thirtyDayReport()}`;
+      <section class="card"><h2 class="feature-title">${t('checkinTitle')}</h2>${history||`<p class="muted">${t('noCheckins')}</p>`}<p class="fineprint">${t('rateTag')}</p></section></div>${advancedReport()}${thirtyDayReport()}${window.BF_Urges?window.BF_Urges.renderPanel(data.urges,data.language):''}`;
   }
   const THEME_LABELS={"hr":["Izgled aplikacije","Šumska","Oceanska","Topla","Jednostavna","Promjena izgleda je besplatna tijekom beta-testiranja."],"en":["App appearance","Forest","Ocean","Warm","Minimal","Appearance options are free during beta."],"de":["Darstellung","Wald","Ozean","Warm","Minimal","Designoptionen sind in der Beta kostenlos."],"es":["Apariencia","Bosque","Océano","Cálido","Minimal","Los temas son gratis durante la beta."],"it":["Aspetto","Foresta","Oceano","Caldo","Minimal","I temi sono gratuiti durante la beta."],"fr":["Apparence","Forêt","Océan","Chaud","Minimal","Thèmes gratuits pendant la bêta."],"pt":["Aparência","Floresta","Oceano","Quente","Minimal","Temas gratuitos durante a beta."],"pl":["Wygląd","Las","Ocean","Ciepły","Minimal","Motywy są bezpłatne podczas bety."]};
   const THEMES=['forest','ocean','warm','mono'];
@@ -1264,7 +1274,7 @@ window.BF_LOCALES = {
     if(!window.confirm(t('importConfirm')))return;
     stopBreathing();
     data={...DEFAULT(),adult:true,minor:false,language:LANGS.some(l=>l[0]===parsed.language)?parsed.language:data.language,
-      showSmoke:!!parsed.showSmoke,theme:validTheme(parsed.theme),days,checkins,baseline,packPrice,view:'home'};
+      showSmoke:!!parsed.showSmoke,theme:validTheme(parsed.theme),urges:window.BF_Urges?window.BF_Urges.sanitize(parsed.urges,365):[],days,checkins,baseline,packPrice,view:'home'};
     persist();render();toast(t('importSuccess'));
   }
   function handle(action,el){switch(action){
@@ -1278,6 +1288,7 @@ window.BF_LOCALES = {
     case 'log-clear':delete data.days[today()];persist();render();toast(t('clearedEntry'));break;
     case 'export':exportData();break;
     case 'export-csv':exportCsv();break;
+    case 'urge-delete':if(Array.isArray(data.urges)&&data.urges.length){data.urges.pop();persist();render();toast(window.BF_Urges.languageLabels(data.language)[17]);}break;
     case 'adult-yes':data.adult=true;data.minor=false;persist();closeDialog();render();break;
     case 'adult-no':data.minor=true;data.adult=false;persist();showDialog('minor');break;
     case 'reset-ask':showDialog('reset');break;
@@ -1293,7 +1304,7 @@ window.BF_LOCALES = {
     if(ev.target.id==='bf-theme'){data.theme=validTheme(ev.target.value);persist();render();}
     if(ev.target.id==='smoke-toggle'){data.showSmoke=ev.target.checked;persist();render();}
     if(ev.target.id==='backup-file'){const file=ev.target.files?.[0];importData(file);}});
-  document.addEventListener('submit',ev=>{if(ev.target.id==='goals-form'){ev.preventDefault();saveGoal();}});
+  document.addEventListener('submit',ev=>{if(ev.target.id==='goals-form'){ev.preventDefault();saveGoal();}if(ev.target.id==='urge-form'){ev.preventDefault();saveUrge(ev.target);}});
   window.addEventListener('storage',event=>{if(event.key===KEY){try{const incoming=JSON.parse(event.newValue);if(incoming?.version===2){data={...DEFAULT(),...incoming};render();}}catch(_err){}}});
   load();render();if(!data.adult)showDialog(data.minor?'minor':'adult');
   if(location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname)){
