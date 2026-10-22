@@ -1264,7 +1264,7 @@ window.BF_LOCALES = {
     if(!window.confirm(t('importConfirm')))return;
     stopBreathing();
     data={...DEFAULT(),adult:true,minor:false,language:LANGS.some(l=>l[0]===parsed.language)?parsed.language:data.language,
-      showSmoke:!!parsed.showSmoke,days,checkins,baseline,packPrice,view:'home'};
+      showSmoke:!!parsed.showSmoke,theme:validTheme(parsed.theme),days,checkins,baseline,packPrice,view:'home'};
     persist();render();toast(t('importSuccess'));
   }
   function handle(action,el){switch(action){
