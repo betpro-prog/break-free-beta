@@ -1149,7 +1149,7 @@ window.BF_LOCALES = {
     const money=n=>n===null?'—':new Intl.NumberFormat(data.language,{style:'currency',currency:'EUR'}).format(n);
     const weekCards=weeks.map((w,i)=>'<div class="card"><p class="kicker">'+(hr?'Tjedan ':'Week ')+(i+1)+'</p><strong>'+avg(w.averageCigarettes)+'</strong><p class="fineprint">'+w.loggedDays+'/7 '+(hr?'dana':'days')+'</p></div>').join('');
     const card=(length,r)=>'<div class="card"><p class="kicker">'+length+' '+(hr?'dana':'days')+'</p><div class="number">'+avg(r.averageCigarettes)+'</div><p class="fineprint">'+r.loggedDays+'/'+length+' '+(hr?'evidentirano':'logged')+' · '+money(r.estimatedSavings)+'</p></div>';
-    return '<section class="card" style="margin-top:18px"><h2 class="feature-title">📊 '+(hr?'Detaljna statistika — besplatna beta':'Detailed statistics — free beta')+'</h2><p class="fineprint">'+(hr?'Nezabilježeni dani nisu dani s nulom.':'Unlogged days are not zero-cigarette days.')+'</p><div class="cards two">'+card(30,thirty)+card(90,ninety)+'</div><h3 class="feature-title">'+(hr?'Tjedni prosjek, zadnja 4 tjedna':'Weekly average, last 4 weeks')+'</h3><div class="cards two">'+weekCards+'</div><p class="fineprint">'+(hr?'Ušteda je procjena.':'Savings are estimates.')+'</p></section>';
+    return '<section class="card" style="margin-top:18px"><h2 class="feature-title">📊 '+(hr?'Detaljna statistika — besplatna beta':'Detailed statistics — free beta')+'</h2><p class="fineprint">'+(hr?'Nezabilježeni dani nisu dani s nulom.':'Unlogged days are not zero-cigarette days.')+'</p><div class="cards two">'+card(30,thirty)+card(90,ninety)+'</div><h3 class="feature-title">'+(hr?'Tjedni prosjek, zadnja 4 tjedna':'Weekly average, last 4 weeks')+'</h3><div class="cards two">'+weekCards+'</div><p class="fineprint">'+(hr?'Ušteda je procjena.':'Savings are estimates.')+'</p><button type="button" class="btn secondary" data-action="export-csv">'+(hr?'Izvezi CSV (90 dana)':'Export CSV (90 days)')+'</button></section>';
   }
   function renderProgress(){
     const n=day(),keys=Array.from({length:7},(_,i)=>offset(i-6)),values=keys.map(k=>day(k));
@@ -1217,6 +1217,18 @@ window.BF_LOCALES = {
     const validBaseline=baseline==='' || (/^\d+$/.test(baseline)&&Number(baseline)<=100);
     const validPrice=price==='' || (Number.isFinite(Number(price))&&Number(price)>=0&&Number(price)<=100&&/^\d+(\.\d{1,2})?$/.test(price));
     if(!validBaseline||!validPrice){toast(t('invalidGoal'));return;}data.baseline=baseline===''?null:Number(baseline);data.packPrice=price===''?null:Number(price);persist();render();toast(t('goalSaved'));}
+  function exportCsv(){
+    if(!window.BF_Analytics)return;
+    const csv=window.BF_Analytics.toCsv(data.days,90);
+    if(window.BreakFreeAndroid&&typeof window.BreakFreeAndroid.saveCsv==='function'){
+      window.BreakFreeAndroid.saveCsv(csv);return;
+    }
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='break-free-90-days.csv';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }
   function exportData(){const contents=JSON.stringify({app:'Break Free',...data,exportedAt:new Date().toISOString()},null,2);
     if(window.BreakFreeAndroid && typeof window.BreakFreeAndroid.saveBackup==='function') {window.BreakFreeAndroid.saveBackup(contents);return;}
     const blob=new Blob([contents],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`break-free-backup-${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);}
@@ -1252,6 +1264,7 @@ window.BF_LOCALES = {
     case 'log-zero':data.days[today()]={cigs:0};persist();render();toast(t('confirmZero'));break;
     case 'log-clear':delete data.days[today()];persist();render();toast(t('clearedEntry'));break;
     case 'export':exportData();break;
+    case 'export-csv':exportCsv();break;
     case 'adult-yes':data.adult=true;data.minor=false;persist();closeDialog();render();break;
     case 'adult-no':data.minor=true;data.adult=false;persist();showDialog('minor');break;
     case 'reset-ask':showDialog('reset');break;
