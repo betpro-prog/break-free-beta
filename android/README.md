@@ -17,3 +17,11 @@
 3. The debug APK is at `app/build/outputs/apk/debug/app-debug.apk`.
 
 Android beta uses a different storage area from Safari/PWA. Existing data are not transferred automatically; use the JSON export/import feature.
+
+## Provjera prije prve javne prodaje (2026-10-22)
+- GitHub Actions Android debug build: **uspješan** (run 39743146618).
+- Testovi statistike: **uspješni** (run 39743162650).
+- GitHub Pages objava i njezin zasebni status moraju se provjeriti nakon promjena; uspjeh workflowa `Publish BREAK FREE beta` sam po sebi nije dokaz da je GitHub Pages deploy dovršen.
+- Napredni CSV izvoz postoji u `analytics.js` i ima automatizirani test, ali još **nema korisničkog gumba za CSV**.
+- Uređajni Android test i kupnje putem Play Consolea još nisu provedeni.
+- Za produkcijsku pretplatu potreban je sigurni backend i testiranje isporuke prava; nemoj postavljati `BILLING_ENABLED=true` prije toga.
