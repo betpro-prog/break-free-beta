@@ -38,3 +38,14 @@ test('backup import permits user-picked content URI but not file URLs', () => {
   assert.match(android,/setAllowFileAccess\(false\)/);
   assert.match(android,/Intent\.ACTION_OPEN_DOCUMENT/);
 });
+
+test('visual themes can be selected and are persisted in both builds', () => {
+  for (const text of [web,bundled]) {
+    assert.match(text,/const THEMES=\['forest','ocean','warm','mono'\]/);
+    assert.match(text,/data\.theme=validTheme\(ev\.target\.value\);persist\(\);render\(\)/);
+    assert.match(text,/document\.documentElement\.dataset\.bfTheme=validTheme\(data\.theme\)/);
+    assert.match(text,/html\[data-bf-theme="ocean"\]/);
+    assert.match(text,/html\[data-bf-theme="warm"\]/);
+    assert.match(text,/html\[data-bf-theme="mono"\]/);
+  }
+});
