@@ -48,7 +48,9 @@ public final class MainActivity extends Activity {
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(true);
         web.getSettings().setAllowFileAccess(false);
-        web.getSettings().setAllowContentAccess(false);
+        // Permit the Android document picker to return a JSON content URI for backup import.
+        // Direct file:// access remains disabled and external navigation is intercepted.
+        web.getSettings().setAllowContentAccess(true);
         web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         web.getSettings().setJavaScriptCanOpenWindowsAutomatically(false);
         web.setWebViewClient(new WebViewClient() {
