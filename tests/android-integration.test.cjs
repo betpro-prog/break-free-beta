@@ -49,3 +49,11 @@ test('visual themes can be selected and are persisted in both builds', () => {
     assert.match(text,/html\[data-bf-theme="mono"\]/);
   }
 });
+
+test('backup restore preserves user appearance safely in both builds', () => {
+  for (const text of [web,bundled]) {
+    assert.match(text,/theme:validTheme\(parsed\.theme\),days,checkins/);
+    assert.match(text,/theme:'forest'/);
+    assert.match(text,/function validTheme\(value\)/);
+  }
+});
