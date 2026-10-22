@@ -50,3 +50,11 @@ test('calendar day arithmetic survives DST crossing', () => {
   assert.equal(result.loggedDays,1);
   assert.equal(result.entries.at(-1).date,'2026-10-26');
 });
+
+test('CSV export keeps unlogged days blank and quotes no personal data', () => {
+  const csv=stats.toCsv({[k(21)]:{cigs:0}},7,now);
+  assert.ok(csv.startsWith('\uFEFFdate,cigarettes\r\n'));
+  assert.ok(csv.includes('2026-10-20,\r\n'));
+  assert.ok(csv.includes('2026-10-21,0\r\n'));
+  assert.equal(csv.trim().split('\n').length,8);
+});
