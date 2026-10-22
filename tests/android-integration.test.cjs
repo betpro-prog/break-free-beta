@@ -52,7 +52,7 @@ test('visual themes can be selected and are persisted in both builds', () => {
 
 test('backup restore preserves user appearance safely in both builds', () => {
   for (const text of [web,bundled]) {
-    assert.match(text,/theme:validTheme\(parsed\.theme\),urges:window\.BF_Urges\?window\.BF_Urges\.sanitize\(parsed\.urges,365\),days,checkins/);
+    assert.match(text,/theme:validTheme\(parsed\.theme\),urges:window\.BF_Urges\?window\.BF_Urges\.sanitize\(parsed\.urges,365\):\[\],days,checkins/);
     assert.match(text,/theme:'forest'/);
     assert.match(text,/function validTheme\(value\)/);
   }
