@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <application android:allowBackup="false" android:fullBackupContent="false"
         android:label="BREAK FREE" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.Light.NoActionBar"
-        android:icon="@android:drawable/ic_menu_myplaces">
+        android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher">
         <activity android:name=".MainActivity" android:exported="true"
             android:configChanges="orientation|screenSize">
             <intent-filter>
