@@ -38,7 +38,7 @@ jobs:
       - name: Upload Android debug APK and unsigned AAB
         uses: actions/upload-artifact@v4
         with:
-          name: break-free-android-debug-v06
+          name: break-free-android-debug-v07
           path: |
             android/app/build/outputs/apk/debug/*.apk
             android/app/build/outputs/bundle/release/*.aab
