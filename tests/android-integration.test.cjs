@@ -32,3 +32,9 @@ test('native app loads only bundled first-party resources', () => {
   assert.match(android,/getSettings\(\)\.setAllowFileAccess\(false\)/);
   assert.match(android,/openExternal\(url\)/);
 });
+
+test('backup import permits user-picked content URI but not file URLs', () => {
+  assert.match(android,/setAllowContentAccess\(true\)/);
+  assert.match(android,/setAllowFileAccess\(false\)/);
+  assert.match(android,/Intent\.ACTION_OPEN_DOCUMENT/);
+});
