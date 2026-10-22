@@ -69,7 +69,15 @@
     }
     return results;
   }
-  const api = Object.freeze({summarize, weeklyAverages, dateKey});
+  function toCsv(days, length, reference) {
+    const r = summarize(days, null, null, length, reference);
+    const rows = ['date,cigarettes'];
+    for (const entry of r.entries) {
+      rows.push(entry.date + ',' + (entry.cigarettes === null ? '' : entry.cigarettes));
+    }
+    return '\uFEFF' + rows.join('\r\n') + '\r\n';
+  }
+  const api = Object.freeze({summarize, weeklyAverages, dateKey, toCsv});
   if (typeof module === 'object' && module.exports) module.exports=api;
   root.BF_Analytics = api;
 })(typeof window !== 'undefined' ? window : globalThis);
