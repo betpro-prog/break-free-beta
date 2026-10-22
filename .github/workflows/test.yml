@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'analytics.js'
+      - 'urges.js'
       - 'tests/**'
       - 'index.html'
       - 'android/app/src/main/assets/**'
@@ -22,14 +23,16 @@ jobs:
       - name: Run analytics unit tests
         run: node --test tests/*.test.cjs
       - name: Check identical analytics modules
-        run: cmp analytics.js android/app/src/main/assets/analytics.js
+        run: |
+          cmp analytics.js android/app/src/main/assets/analytics.js
+          cmp urges.js android/app/src/main/assets/urges.js
       - name: Check HTML wiring
         run: |
           node - <<'NODE'
           const fs=require('node:fs');
           for(const file of ['index.html','android/app/src/main/assets/index.html']){
             const s=fs.readFileSync(file,'utf8');
-            for(const match of ['<script src="./analytics.js"></script>','function advancedReport()','${advancedReport()}']){
+            for(const match of ['<script src="./analytics.js"></script>','<script src="./urges.js"></script>','BF_Urges.renderPanel','function advancedReport()','${advancedReport()}']){
               if(!s.includes(match)) throw new Error(file+': '+match+' missing');
             }
           }
