@@ -1041,7 +1041,7 @@ window.BF_LOCALES = {
   const KEY = 'breakfree_v02';
   const LEGACY_KEY = 'breakfree_v01';
   const LANGS = [['hr','Hrvatski'],['en','English'],['de','Deutsch'],['es','Español'],['it','Italiano'],['fr','Français'],['pt','Português'],['pl','Polski']];
-  const DEFAULT = () => ({version:2,language:null,adult:false,minor:false,view:'home',showSmoke:false,smokePuffs:0,days:{},checkins:[],baseline:null,packPrice:null});
+  const DEFAULT = () => ({version:2,language:null,adult:false,minor:false,view:'home',showSmoke:false,smokePuffs:0,days:{},checkins:[],baseline:null,packPrice:null,theme:'forest'});
   const isNum = x => typeof x === 'number' && Number.isFinite(x);
   const sanitize = str => String(str ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const isoLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1144,6 +1144,14 @@ window.BF_LOCALES = {
       <div class="split" style="margin-top:18px"><section class="card"><h2 class="feature-title">${t('weekTitle')}</h2><div class="chart" role="img" aria-label="${t('weekTitle')}">${bars}</div><p class="fineprint">${t('chartEmpty')}</p></section>
       <section class="card"><h2 class="feature-title">${t('checkinTitle')}</h2>${history||`<p class="muted">${t('noCheckins')}</p>`}<p class="fineprint">${t('rateTag')}</p></section></div>${advancedReport()}`;
   }
+  const THEME_LABELS={"hr":["Izgled aplikacije","Šumska","Oceanska","Topla","Jednostavna","Promjena izgleda je besplatna tijekom beta-testiranja."],"en":["App appearance","Forest","Ocean","Warm","Minimal","Appearance options are free during beta."],"de":["Darstellung","Wald","Ozean","Warm","Minimal","Designoptionen sind in der Beta kostenlos."],"es":["Apariencia","Bosque","Océano","Cálido","Minimal","Los temas son gratis durante la beta."],"it":["Aspetto","Foresta","Oceano","Caldo","Minimal","I temi sono gratuiti durante la beta."],"fr":["Apparence","Forêt","Océan","Chaud","Minimal","Thèmes gratuits pendant la bêta."],"pt":["Aparência","Floresta","Oceano","Quente","Minimal","Temas gratuitos durante a beta."],"pl":["Wygląd","Las","Ocean","Ciepły","Minimal","Motywy są bezpłatne podczas bety."]};
+  const THEMES=['forest','ocean','warm','mono'];
+  function validTheme(value){return THEMES.includes(value)?value:'forest';}
+  function themePanel(){
+    const l=THEME_LABELS[data.language]||THEME_LABELS.en;
+    const choice=validTheme(data.theme);
+    return '<section class="card" style="margin-top:18px"><h2 class="feature-title">🎨 '+sanitize(l[0])+'</h2><label for="bf-theme">'+sanitize(l[0])+'</label> <select id="bf-theme" aria-label="'+sanitize(l[0])+'" style="width:100%;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--line)">'+THEMES.map((id,i)=>'<option value="'+id+'" '+(choice===id?'selected':'')+'>'+sanitize(l[i+1])+'</option>').join('')+'</select><p class="fineprint">'+sanitize(l[5])+'</p></section>';
+  }
   function renderSettings(){return `<p class="eyebrow">${t('settingsEyebrow')}</p><h1 class="h2">${t('settingsTitle')}</h1><p class="lead">${t('settingsLead')}</p>
     <div class="split"><section class="card"><h2 class="feature-title">🎯 ${t('goalsTitle')}</h2><p class="muted">${t('goalsLead')}</p>
       <form id="goals-form" class="input-row"><div class="input-wrap"><label for="baseline">${t('baselineLabel')}</label><input id="baseline" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="${t('goalPlaceholder')}" value="${data.baseline??''}"></div>
@@ -1152,9 +1160,10 @@ window.BF_LOCALES = {
       <button class="btn small soft" data-action="export">↓ ${t('exportData')}</button> <label for="backup-file" class="btn small secondary" style="display:inline-block">↑ ${t('importData')}</label><input type="file" id="backup-file" class="sr-only" accept="application/json,.json" aria-label="${t('importData')}" /><p class="fineprint">${t('exportNotice')}</p><div class="separator"></div>
       <button class="btn small danger" data-action="reset-ask">${t('resetData')}</button></section></div>
       <div class="split" style="margin-top:18px"><section class="card"><h2 class="feature-title">🌱 ${t('tipsTitle')}</h2><p class="muted">${t('tipsCopy')}</p><p class="fineprint">${t('medicalNotice')}</p></section>
-      <section class="card"><h2 class="feature-title">✦ ${t('vipTitle')}</h2><p class="muted">${t('vipCopy')}</p><span class="badge">${t('noMoney')}</span></section></div>`;}
+      <section class="card"><h2 class="feature-title">✦ ${t('vipTitle')}</h2><p class="muted">${t('vipCopy')}</p><span class="badge">${t('noMoney')}</span></section></div>${themePanel()}`;}
   function render(){
     document.documentElement.lang=data.language;
+    document.documentElement.dataset.bfTheme=validTheme(data.theme);
     document.title='Break Free — Smoke Less';
     langSelect.innerHTML=LANGS.map(([id,name])=>`<option value="${id}" ${id===data.language?'selected':''}>${name}</option>`).join('');
     document.getElementById('foot-note').textContent=t('footNote');
@@ -1253,6 +1262,7 @@ window.BF_LOCALES = {
     handle(el.dataset.action,el);});
   document.addEventListener('keydown',ev=>{const el=ev.target.closest('.is-link[data-action]');if(el&&(ev.key==='Enter'||ev.key===' ')){ev.preventDefault();handle(el.dataset.action,el);}});
   document.addEventListener('change',ev=>{if(ev.target===langSelect){data.language=ev.target.value;persist();render();}
+    if(ev.target.id==='bf-theme'){data.theme=validTheme(ev.target.value);persist();render();}
     if(ev.target.id==='smoke-toggle'){data.showSmoke=ev.target.checked;persist();render();}
     if(ev.target.id==='backup-file'){const file=ev.target.files?.[0];importData(file);}});
   document.addEventListener('submit',ev=>{if(ev.target.id==='goals-form'){ev.preventDefault();saveGoal();}});
