@@ -31,6 +31,7 @@ public final class MainActivity extends Activity {
     private WebView web;
     private ValueCallback<Uri[]> pendingChooser;
     private String backupJson;
+    private String csvExport;
     private BillingManager billing;
     private final Handler main = new Handler(Looper.getMainLooper());
 
@@ -116,12 +117,32 @@ public final class MainActivity extends Activity {
                 catch(ActivityNotFoundException ex){Toast.makeText(MainActivity.this,"Cannot save file",Toast.LENGTH_SHORT).show();}
             });
         }
+        @JavascriptInterface public void saveCsv(String csv) {
+            if(csv == null || csv.length()>200000 || !csv.startsWith("\\uFEFFdate,cigarettes"))return;
+            main.post(()->{
+                csvExport=csv;
+                Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("text/csv");
+                intent.putExtra(Intent.EXTRA_TITLE,"break-free-90-days.csv");
+                try{startActivityForResult(intent,422);}
+                catch(ActivityNotFoundException ex){Toast.makeText(MainActivity.this,"Cannot save CSV",Toast.LENGTH_SHORT).show();}
+            });
+        }
         @JavascriptInterface public void openVip(){ main.post(()-> billing.showVipDialog()); }
     }
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode,resultCode,data);
-        if(requestCode==REQUEST_BACKUP_IMPORT){
+        if(requestCode==422){
+            if(resultCode==RESULT_OK && data!=null && data.getData()!=null && csvExport!=null){
+                try(OutputStream output=getContentResolver().openOutputStream(data.getData())){
+                    if(output!=null){output.write(csvExport.getBytes(StandardCharsets.UTF_8));}
+                    Toast.makeText(this,"CSV saved",Toast.LENGTH_SHORT).show();
+                }catch(IOException ex){Toast.makeText(this,"Could not save CSV",Toast.LENGTH_LONG).show();}
+            }
+            csvExport=null;
+        } else if(requestCode==REQUEST_BACKUP_IMPORT){
             if(pendingChooser!=null) {
                 Uri[] uris = resultCode==RESULT_OK && data!=null && data.getData()!=null ?
                   new Uri[]{data.getData()} : null;
