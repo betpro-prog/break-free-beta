@@ -64,3 +64,11 @@ test('browser source and Android bundle both preserve diary backups',()=>{
     }
   }
 });
+
+test('calendar validation rejects impossible dates',()=>{
+  assert.deepEqual(U.sanitize([
+    {day:'2026-02-31',trigger:'coffee',intensity:3},
+    {day:'2026-13-01',trigger:'coffee',intensity:3},
+    {day:'2026-02-28',trigger:'coffee',intensity:3}
+  ]),[{day:'2026-02-28',trigger:'coffee',intensity:3}]);
+});
