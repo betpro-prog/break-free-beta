@@ -118,7 +118,7 @@ public final class MainActivity extends Activity {
             });
         }
         @JavascriptInterface public void saveCsv(String csv) {
-            if(csv == null || csv.length()>200000 || !csv.startsWith("\\uFEFFdate,cigarettes"))return;
+            if(csv == null || csv.length()>200000 || !(csv.isEmpty() || csv.codePointAt(0)!=0xFEFF || !csv.substring(1).startsWith("date,cigarettes")))return;
             main.post(()->{
                 csvExport=csv;
                 Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
